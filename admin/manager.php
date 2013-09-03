@@ -154,6 +154,7 @@ class BU_Navigation_Admin_Manager {
 			// Setup dynamic script context for manage.js
 			$script_context = array(
 				'postTypes' => $this->post_type,
+				'postStatuses' => array( 'publish', 'private' ),
 				'nodePrefix' => 'nm',
 				'lazyLoad' => true,
 				'showCounts' => true
@@ -382,8 +383,6 @@ class BU_Navigation_Admin_Manager {
 				array_merge( $errors, $this->reorder_tracker->errors );
 			}
 
-			if (function_exists('invalidate_blog_cache')) invalidate_blog_cache();
-
 			if( 0 == count( $errors ) ) {
 				$saved = true;
 			} else {
@@ -601,9 +600,14 @@ class BU_Navigation_Admin_Manager {
 					// Update post parent and menu order
 					$updated = wp_update_post(array('ID'=>$post->ID,'post_parent'=>$post->post_parent,'menu_order'=>$post->menu_order), true );
 
+					// Edge case detection ... this error appears even though the post has actually been updated
+					if ( is_wp_error( $updated ) && in_array( 'invalid_page_template', $updated->get_error_codes() ) ) {
+						if ( 1 == count( $updated->errors ) )
+							$updated = true;
+					}
+
 				}
 
-				// @todo handle ugly case where wp_update_post returns failure but has actually updated the post (i.e. invalid_page_template error)
 				if( false == $updated || is_wp_error( $updated ) ) {
 
 					error_log(sprintf('[BU Navigation Navman] Could not move post: %s', print_r($post, true)));
@@ -708,11 +712,8 @@ class BU_Navigation_Admin_Manager {
 				// Move under another post -- check if parent is editable
 				$allowed = current_user_can( 'edit_post', $parent->ID );
 
-				// Don't allow movement of published posts under non-published posts
-				if( $post->post_status == 'publish') {
-					$allowed = $allowed && $parent->post_status == 'publish';
-				}
 
+				// Links can't have children
 				if ( BU_NAVIGATION_LINK_POST_TYPE == $parent->post_type ) {
 					$allowed = false;
 				}

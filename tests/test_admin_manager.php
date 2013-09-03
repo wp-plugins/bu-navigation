@@ -1,5 +1,7 @@
 <?php
 
+require_once dirname( __FILE__ ) . '/nav-testcase.php';
+
 /**
  * Coverage for the BU_Navigation_Admin_Manager class
  *
@@ -27,8 +29,8 @@ class WP_Test_BU_Navigation_Admin_Manager extends BU_Navigation_UnitTestCase {
 
 		// Setup users
 		$this->users = array(
-			'admin' => $this->factory->user->create(array('role'=>'administrator','user_email'=>'wpcms01@bu.edu')),
-			'contrib' => $this->factory->user->create(array('role'=>'contributor','user_email'=>'wpcms02@bu.edu'))
+			'admin' => $this->factory->user->create(array('role'=>'administrator')),
+			'contrib' => $this->factory->user->create(array('role'=>'contributor'))
 			);
 
 		// Setup posts
@@ -369,9 +371,10 @@ class WP_Test_BU_Navigation_Admin_Manager extends BU_Navigation_UnitTestCase {
 		// Reordering
 		$this->assertEquals( 1, get_post($this->posts['grandchild_one'])->menu_order);
 		$this->assertEquals( 2, get_post($this->posts['parent'])->menu_order);
-		$this->assertEquals( 3, get_post($this->posts['google'])->menu_order);
+		$this->assertEquals( 3, get_post($this->posts['private'])->menu_order);
 		/* new link two should be 4 */
-		$this->assertEquals( 5, get_post($this->posts['last_page'])->menu_order);
+		$this->assertEquals( 5, get_post($this->posts['google'])->menu_order);
+		$this->assertEquals( 6, get_post($this->posts['last_page'])->menu_order);
 
 		$this->assertEquals( 1, get_post($this->posts['edit'])->menu_order);
 		$this->assertEquals( 2, get_post($this->posts['grandchild_two'])->menu_order);
